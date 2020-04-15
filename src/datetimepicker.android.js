@@ -10,62 +10,67 @@ import {
   TIME_SET_ACTION,
   DISMISS_ACTION,
   NEUTRAL_BUTTON_ACTION,
-  DISPLAY,
-  ANDROID_MODE,
 } from './constants';
 import pickers from './picker';
 import invariant from 'invariant';
+import React, {Fragment} from 'react';
 
 import type {AndroidEvent, AndroidNativeProps} from './types';
 
-function validateProps(props: AndroidNativeProps) {
-  const {mode, value, display} = props;
+export default function RNDateTimePicker({
+  mode,
+  value,
+  display,
+  onChange,
+  is24Hour,
+  minimumDate,
+  maximumDate,
+  neutralButtonLabel,
+  isVisible,
+}: AndroidNativeProps) {
+  
   invariant(value, 'A date or time should be specified as `value`.');
-  invariant(
-    !(display === DISPLAY.calendar && mode === ANDROID_MODE.time) &&
-      !(display === DISPLAY.clock && mode === ANDROID_MODE.date),
-    `display: ${display} and mode: ${mode} cannot be used together.`,
-  );
-}
-
-export default function RNDateTimePicker(props: AndroidNativeProps) {
-  validateProps(props);
-  const {
-    mode,
-    value,
-    display,
-    onChange,
-    is24Hour,
-    minimumDate,
-    maximumDate,
-    neutralButtonLabel,
-  } = props;
   let picker;
 
-  switch (mode) {
-    case MODE_TIME:
-      picker = pickers[MODE_TIME].open({
+  const manageModeStatus = (modeType) => {
+    if(isVisible){
+      picker = pickers[modeType].open({
         value,
         display,
         is24Hour,
         neutralButtonLabel,
+        isVisible,
       });
-      break;
-
-    case MODE_DATE:
-    default:
-      picker = pickers[MODE_DATE].open({
+    } else {
+      picker = pickers[MODE_TIME].close({
         value,
         display,
-        minimumDate,
-        maximumDate,
+        is24Hour,
         neutralButtonLabel,
+        isVisible,
       });
+      picker = pickers[MODE_DATE].close({
+        value,
+        display,
+        is24Hour,
+        neutralButtonLabel,
+        isVisible,
+      });
+    }
+  }
+
+  switch (mode) {
+    case MODE_TIME:
+      manageModeStatus(MODE_TIME);
+      break;
+    case MODE_DATE:
+    default:
+      manageModeStatus(MODE_DATE);
       break;
   }
 
   picker.then(
-    function resolve({action, day, month, year, minute, hour}) {
+    function resolve({action, day, month, year, minute, hour, isVisible}) {
       const date = new Date(value);
       const event: AndroidEvent = {
         type: 'set',
@@ -101,7 +106,7 @@ export default function RNDateTimePicker(props: AndroidNativeProps) {
     },
   );
 
-  return null;
+  return <Fragment />;
 }
 
 RNDateTimePicker.defaultProps = {

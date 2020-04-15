@@ -42,6 +42,14 @@ export default class DatePickerAndroid {
     return NativeModules.RNDatePickerAndroid.open(options);
   }
 
+  static async close(options: DatePickerOptions): Promise<DateTimePickerResult> {
+    toMilliseconds(options, 'value', 'minimumDate', 'maximumDate');
+    options.display = options.display || DISPLAY_DEFAULT;
+
+    return NativeModules.RNDatePickerAndroid.close(options);
+  }
+
+
   /**
    * A date has been selected.
    */

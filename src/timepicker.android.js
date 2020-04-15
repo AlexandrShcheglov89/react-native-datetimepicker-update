@@ -39,6 +39,14 @@ export default class TimePickerAndroid {
     return NativeModules.RNTimePickerAndroid.open(options);
   }
 
+  static async close(options: TimePickerOptions): Promise<DateTimePickerResult> {
+    toMilliseconds(options, 'value');
+    options.display = options.display || DISPLAY_DEFAULT;
+
+    return NativeModules.RNTimePickerAndroid.close(options);
+  }
+
+
   /**
    * A time has been selected.
    */

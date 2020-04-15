@@ -146,6 +146,31 @@ public class RNDatePickerDialogModule extends ReactContextBaseJavaModule {
     fragment.show(fragmentManager, FRAGMENT_TAG);
   }
 
+  @ReactMethod
+  public void close(@Nullable final ReadableMap options, Promise promise) {
+    FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+    if (activity == null) {
+      promise.reject(
+          RNConstants.ERROR_NO_ACTIVITY,
+          "Tried to close a DatePicker dialog while not attached to an Activity");
+      return;
+    }
+
+    FragmentManager fragmentManager = activity.getSupportFragmentManager();
+    final RNDatePickerDialogFragment oldFragment = (RNDatePickerDialogFragment) fragmentManager.findFragmentByTag(FRAGMENT_TAG);
+
+    if (oldFragment != null && options != null) {
+      UiThreadUtil.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          oldFragment.dismiss();
+        }
+      });
+
+      return;
+    }
+  }
+
   private Bundle createFragmentArguments(ReadableMap options) {
     final Bundle args = new Bundle();
     if (options.hasKey(RNConstants.ARG_VALUE) && !options.isNull(RNConstants.ARG_VALUE)) {

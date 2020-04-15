@@ -120,6 +120,32 @@ public class RNTimePickerDialogModule extends ReactContextBaseJavaModule {
     fragment.show(fragmentManager, FRAGMENT_TAG);
   }
 
+  @ReactMethod
+  public void close(@Nullable final ReadableMap options, Promise promise) {
+    FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+    if (activity == null) {
+      promise.reject(
+          RNConstants.ERROR_NO_ACTIVITY,
+          "Tried to open a TimePicker dialog while not attached to an Activity");
+      return;
+    }
+    // We want to support both android.app.Activity and the pre-Honeycomb FragmentActivity
+    // (for apps that use it for legacy reasons). This unfortunately leads to some code duplication.
+    FragmentManager fragmentManager = activity.getSupportFragmentManager();
+    final RNTimePickerDialogFragment oldFragment = (RNTimePickerDialogFragment) fragmentManager.findFragmentByTag(FRAGMENT_TAG);
+
+    if (oldFragment != null && options != null) {
+      UiThreadUtil.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          oldFragment.dismiss();
+        }
+      });
+
+      return;
+    }
+  }
+
   private Bundle createFragmentArguments(ReadableMap options) {
     final Bundle args = new Bundle();
     if (options.hasKey(RNConstants.ARG_VALUE) && !options.isNull(RNConstants.ARG_VALUE)) {
